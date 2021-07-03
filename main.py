@@ -10,7 +10,7 @@ async def run():
     joint_action_queue = asyncio.Queue()  # Sends joint torques from ElectricalModel to BulletModel
     joint_state_queue = asyncio.Queue()  # Sends joint states (position, velocity) from BulletModel to ElectricalModel
     joint_command_queue = asyncio.Queue()  # Sends joint commands (percent output) from the WebSocket client to the ElectricalModel
-    log = Log("command", "torque", "position", "velocity") # Creates a log table that has four columns
+    log = Log("command", "torque", "position", "velocity")  # Creates a log table that has four columns
     robotModel = BulletModel("test-robot/robot.urdf", joint_action_queue, joint_state_queue)
     electricalModel = ElectricalModel(joint_state_queue, joint_action_queue, joint_command_queue, log)
     # Four coroutines contain loops and are run in parallel:

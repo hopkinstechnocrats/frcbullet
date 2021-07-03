@@ -10,7 +10,7 @@ class ElectricalModel:
         self.joint_state_queue = joint_state_queue
         self.joint_action_queue = joint_action_queue
         self.joint_command_queue = joint_command_queue
-        self.motor = MotorModel()
+        self.motor = MotorModel(torque_control_enabled=True)
         self.joint_state = 0
         self.joint_action = 0
         self.joint_command = 0

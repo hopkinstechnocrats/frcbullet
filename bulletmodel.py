@@ -13,9 +13,10 @@ class BulletModel:
         startPos = [0, 0, 0]
         startOrientation = p.getQuaternionFromEuler([0, 0, 0])
         self.robotID = p.loadURDF(urdf_location, startPos, startOrientation, useFixedBase=1)
+        self.numJoints = p.getNumJoints(self.robotID)
         self.joint_action_queue = joint_action_queue
         self.joint_state_queue = joint_state_queue
-        self.joint_torque = 0
+        self.joint_torque_array = 0
         self.joint_position = 0
         self.joint_velocity = 0
 
@@ -29,30 +30,25 @@ class BulletModel:
     async def consume_joint_actions(self):
         while True:
             joint_update = await self.joint_action_queue.get()
-            self.joint_torque = joint_update
+            self.joint_torque_array = joint_update
             self.joint_action_queue.task_done()
             await asyncio.sleep(0.005)
 
     async def produce_joint_states(self):
         while True:
-            joint_state = p.getJointState(bodyUniqueId=self.robotID, jointIndex=0)
-            self.joint_position = joint_state[0]
-            self.joint_velocity = joint_state[0]
-            await self.joint_state_queue.put(
-                {"jointPosition": self.joint_position, "jointVelocity": self.joint_velocity})
+            joint_state = p.getJointStates(bodyUniqueId=self.robotID, jointIndices=range(self.numJoints))
+            await self.joint_state_queue.put(joint_state)
             await asyncio.sleep(0.01)
 
     async def update_model(self):
-        p.setJointMotorControl2(bodyIndex=self.robotID,
-                                jointIndex=0,
-                                controlMode=p.VELOCITY_CONTROL,
-                                force=0)
+        p.setJointMotorControlArray(bodyIndex=self.robotID,
+                                    jointIndices=range(self.numJoints),
+                                    controlMode=p.VELOCITY_CONTROL,
+                                    forces=[0] * self.numJoints)
         while True:
-            p.setJointMotorControl2(bodyIndex=self.robotID,
-                                    jointIndex=0,
-                                    controlMode=p.TORQUE_CONTROL,
-                                    force=self.joint_torque)
+            p.setJointMotorControlArray(bodyIndex=self.robotID,
+                                        jointIndices=range(self.numJoints),
+                                        controlMode=p.TORQUE_CONTROL,
+                                        forces=self.joint_torque_array)
             p.stepSimulation()
             await asyncio.sleep(10. / 240.)
-            cubePos, cubeOrn = p.getBasePositionAndOrientation(self.robotID)
-            # print(cubePos, cubeOrn)

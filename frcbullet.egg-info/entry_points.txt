@@ -1,0 +1,4 @@
+
+        [console_scripts]
+        frcbullet = frcbullet.cli.main:main
+    

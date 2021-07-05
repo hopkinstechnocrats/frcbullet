@@ -1,0 +1,64 @@
+<robot name="onshape">
+<link name="baseLink">
+<visual>
+<origin xyz="0.0289371 0.041427 -0.00566818" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://arm.stl"/>
+</geometry>
+<material name="arm_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0.0289371 0.041427 -0.00566818" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://arm.stl"/>
+</geometry>
+<material name="arm_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.0416371 0.054127 0.0451318" rpy="0 0 0"/>
+<mass value="0.178291" />
+<inertia ixx="0.000162954" ixy="0"  ixz="0" iyy="0.000162954" iyz="0" izz="1.91711e-05" />
+</inertial>
+</link>
+
+<link name="arm_2">
+<visual>
+<origin xyz="-0.0127 -0.1016 0" rpy="-1.5708 -0 0" />
+<geometry>
+<mesh filename="package://arm.stl"/>
+</geometry>
+<material name="arm_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="-0.0127 -0.1016 0" rpy="-1.5708 -0 0" />
+<geometry>
+<mesh filename="package://arm.stl"/>
+</geometry>
+<material name="arm_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-1.73472e-18 -0.0508 -0.0127" rpy="0 0 0"/>
+<mass value="0.178291" />
+<inertia ixx="0.000162954" ixy="0"  ixz="0" iyy="1.91711e-05" iyz="0" izz="0.000162954" />
+</inertial>
+</link>
+
+<joint name="rotate" type="revolute">
+<origin xyz="0.0416371 0.041427 0.0959318" rpy="-1.5708 -0 0" />
+<parent link="baseLink" />
+<child link="arm_2" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+
+</robot>

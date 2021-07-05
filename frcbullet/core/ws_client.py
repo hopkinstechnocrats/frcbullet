@@ -3,24 +3,22 @@ import json
 import websockets
 
 
-async def get_joint_commands(joint_command_queue: asyncio.Queue):
-    uri = "ws://localhost:3300/wpilibws"
-    async with websockets.connect(uri) as websocket:
-        devices = []
-        while True:
-            response_json = await websocket.recv()
-            response = json.loads(response_json)
-            if response["type"] == "PWM":
-                if response["device"] not in devices:
-                    devices.append(response["device"])
-                if response["device"] == '0':
-                    if "<speed" in response["data"].keys():
-                        await joint_command_queue.put(response["data"]["<speed"])
+class WSInterface:
 
+    def __init__(self, num_joints: int):
+        self.num_joints = num_joints
+        self.joint_commands = [0] * num_joints
 
-async def print_msg(websocket):
-    print(await websocket.recv())
+    def get_joint_commands(self):
+        return self.joint_commands
 
-
-if __name__ == "__main__":
-    asyncio.run(get_joint_commands(asyncio.Queue()))
+    async def set_joint_commands(self):
+        uri = "ws://localhost:3300/wpilibws"
+        async with websockets.connect(uri) as websocket:
+            while True:
+                response_json = await websocket.recv()
+                response = json.loads(response_json)
+                if response["type"] == "PWM":
+                    if response["device"] in map(lambda x: str(x), range(self.num_joints)):
+                        if "<speed" in response["data"].keys():
+                            self.joint_commands[int(response["device"])] = response["data"]["<speed"]

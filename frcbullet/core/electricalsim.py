@@ -5,47 +5,31 @@ from pybullet_envs.bullet.motor import MotorModel
 
 class ElectricalModel:
 
-    def __init__(self, joint_state_queue: asyncio.Queue, joint_action_queue: asyncio.Queue,
-                 joint_command_queue: asyncio.Queue, log):
-        self.joint_state_queue = joint_state_queue
-        self.joint_action_queue = joint_action_queue
-        self.joint_command_queue = joint_command_queue
-        self.motor = MotorModel(torque_control_enabled=True)
-        self.joint_state = 0
-        self.joint_action = 0
-        self.joint_command = 0
+    def __init__(self, log, numMotors):
+        self.numJoints = numMotors
+        self.motors = [MotorModel(torque_control_enabled=True)] * numMotors
+        self.joint_actions = [0] * numMotors
+        self.joint_states = [{"jointPosition": 0, "jointVelocity": 0}] * numMotors
+        self.joint_action = [0] * numMotors
+        self.joint_commands = [0] * numMotors
         self.log = log
 
-    async def schedule(self):
-        await asyncio.gather(
-            self.consume_joint_commands(),
-            self.consume_joint_states(),
-            self.produce_joint_actions(),
-            self.electrical_sim_loop()
-        )
+    def set_joint_commands(self, joint_commands):
+        self.joint_commands = joint_commands
+        self.log.update_value("commands", self.joint_commands)
 
-    async def consume_joint_commands(self):
-        while True:
-            self.joint_command = await self.joint_command_queue.get()
-            self.log.update_value("command", self.joint_command)
-            await asyncio.sleep(0.005)
+    def set_joint_states(self, joint_states):
+        self.joint_states = joint_states
+        self.log.update_value("positions", [x["jointPosition"] for x in self.joint_states])
+        self.log.update_value("velocities", [x["jointVelocity"] for x in self.joint_states])
 
-    async def consume_joint_states(self):
-        while True:
-            self.joint_state = await self.joint_state_queue.get()
-            self.log.update_value("position", self.joint_state["jointPosition"])
-            self.log.update_value("velocity", self.joint_state["jointVelocity"])
-            await asyncio.sleep(0.005)
+    def get_joint_actions(self):
+        self.log.update_value("torques", self.joint_actions)
+        return self.joint_actions
 
-    async def produce_joint_actions(self):
-        while True:
-            await self.joint_action_queue.put(self.joint_action)
-            self.log.update_value("torque", self.joint_action)
-            await asyncio.sleep(0.01)
-
-    async def electrical_sim_loop(self):
-        while True:
-            self.joint_action, _ = self.motor.convert_to_torque(self.joint_command, self.joint_state["jointPosition"],
-                                                                self.joint_state["jointVelocity"])
-            print("Torque: " + str(self.joint_action))
-            await asyncio.sleep(0.01)
+    def electrical_sim_loop(self):
+        for x in range(self.numJoints):
+            self.joint_action[x] , _ = self.motors[x].convert_to_torque(self.joint_commands[x], self.joint_states[x]["jointPosition"],
+                                                                self.joint_states[x]["jointVelocity"])
+        print("Torque: " + str(self.joint_action))
+        await asyncio.sleep(0.01)

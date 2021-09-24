@@ -14,11 +14,15 @@ class WSInterface:
 
     async def set_joint_commands(self):
         uri = "ws://localhost:3300/wpilibws"
-        async with websockets.connect(uri) as websocket:
-            while True:
-                response_json = await websocket.recv()
-                response = json.loads(response_json)
-                if response["type"] == "PWM":
-                    if response["device"] in map(lambda x: str(x), range(self.num_joints)):
-                        if "<speed" in response["data"].keys():
-                            self.joint_commands[int(response["device"])] = response["data"]["<speed"]
+        while True:
+            try:
+                async with websockets.connect(uri) as websocket:
+                    while True:
+                        response_json = await websocket.recv()
+                        response = json.loads(response_json)
+                        if response["type"] == "PWM":
+                            if response["device"] in map(lambda x: str(x), range(self.num_joints)):
+                                if "<speed" in response["data"].keys():
+                                    self.joint_commands[int(response["device"])] = response["data"]["<speed"]
+            except:
+                pass

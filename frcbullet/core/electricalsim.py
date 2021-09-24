@@ -20,8 +20,8 @@ class ElectricalModel:
 
     def set_joint_states(self, joint_states):
         self.joint_states = joint_states
-        self.log.update_value("positions", [x["jointPosition"] for x in self.joint_states])
-        self.log.update_value("velocities", [x["jointVelocity"] for x in self.joint_states])
+        self.log.update_value("positions", list([x[0] for x in self.joint_states]))
+        self.log.update_value("velocities", list([x[1] for x in self.joint_states]))
 
     def get_joint_actions(self):
         self.log.update_value("torques", self.joint_actions)
@@ -29,7 +29,6 @@ class ElectricalModel:
 
     def electrical_sim_loop(self):
         for x in range(self.numJoints):
-            self.joint_action[x] , _ = self.motors[x].convert_to_torque(self.joint_commands[x], self.joint_states[x]["jointPosition"],
-                                                                self.joint_states[x]["jointVelocity"])
-        print("Torque: " + str(self.joint_action))
-        await asyncio.sleep(0.01)
+            _, self.joint_actions[x] = self.motors[x].convert_to_torque(self.joint_commands[x], self.joint_states[x][0],
+                                                                self.joint_states[x][1])
+        print("Torque: " + str(self.joint_actions))

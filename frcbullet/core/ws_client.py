@@ -1,5 +1,7 @@
 import asyncio
 import json
+import re
+
 import websockets
 
 
@@ -20,9 +22,13 @@ class WSInterface:
                     while True:
                         response_json = await websocket.recv()
                         response = json.loads(response_json)
-                        if response["type"] == "PWM":
-                            if response["device"] in map(lambda x: str(x), range(self.num_joints)):
-                                if "<speed" in response["data"].keys():
-                                    self.joint_commands[int(response["device"])] = response["data"]["<speed"]
+                        if response["type"] == "SimDevice":
+                            if response["device"] in map(lambda x: "VelocityJointMotor[" + str(x) + "]",
+                                                         range(self.num_joints)):
+                                if "<velocitycommand" in response["data"].keys():
+                                    self.joint_commands[
+                                        int(re.search(r"\[([A-Za-z0-9_]+)\]", response["device"]).group(1))] = \
+                                    response["data"]["<velocitycommand"]
+                                    print(str(response["device"]) + ": " + str(response["data"]["<velocitycommand"]))
             except:
                 pass

@@ -19,7 +19,7 @@ class BulletModel:
                                     controlMode=p.VELOCITY_CONTROL,
                                     forces=[0] * self.numJoints)
         self.joint_velocity_command_array = [0] * self.numJoints
-        self.max_forces = [3] * self.numJoints
+        self.max_forces = [20] * self.numJoints
         self.joint_position = [0] * self.numJoints
         self.joint_velocity = [0] * self.numJoints
 
@@ -43,3 +43,4 @@ class BulletModel:
         log.update_value("torques", list(map(lambda x: x[3], joint_states)))
         log.update_value("velocities", list(map(lambda x: x[1], joint_states)))
         log.update_value("positions", list(map(lambda x: x[0], joint_states)))
+

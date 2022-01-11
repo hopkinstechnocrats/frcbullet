@@ -1,4 +1,6 @@
 import asyncio
+import logging
+
 import pandas as pd
 import numpy
 
@@ -14,6 +16,7 @@ class Log:
 
     def update_value(self, log_header, value):
         self.currentData[log_header] = value
+        # logging.info(f"{log_header}: {str(value)}")
 
     async def write_to_dataframe(self):
         while True:
